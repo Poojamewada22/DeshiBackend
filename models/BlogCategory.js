@@ -32,7 +32,7 @@ const blogCategorySchema =
       timestamps: true,
     }
   );
-
+// fgfgfg
 module.exports = mongoose.model(
   "BlogCategory",
   blogCategorySchema
