@@ -14,6 +14,6 @@ const blogCategorySchema =
   );
 // fgfgfg
 module.exports = mongoose.model(
-  "BlogCategory",
+  "blogCategory",
   blogCategorySchema
 );
