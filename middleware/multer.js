@@ -2,21 +2,28 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-// uploads folder auto create
-if (!fs.existsSync("uploads")) {
-  fs.mkdirSync("uploads", { recursive: true });
+// uploads folder auto create karega
+const uploadPath = "uploads";
+
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, { recursive: true });
 }
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/");
+    cb(null, uploadPath);
   },
 
   filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
+    cb(
+      null,
+      Date.now() + path.extname(file.originalname)
+    );
   },
 });
 
-const upload = multer({ storage });
+const upload = multer({
+  storage,
+});
 
 module.exports = upload;
