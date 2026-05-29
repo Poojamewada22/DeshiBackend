@@ -1,69 +1,72 @@
 const Admin = require("../models/adminModel");
-
 const bcrypt = require("bcryptjs");
-
 const jwt = require("jsonwebtoken");
 
-// ================= REGISTER =================
-const registerAdmin = async (
-  req,
-  res
-) => {
+// ================= REGISTER ADMIN =================
+const registerAdmin = async (req, res) => {
   try {
-    const { email, password } =
-      req.body;
+    const { email, password } = req.body;
 
-    // Check Admin
-    const existingAdmin =
-      await Admin.findOne({ email });
+    // Validation
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and Password are required",
+      });
+    }
+
+    // Check existing admin
+    const existingAdmin = await Admin.findOne({ email });
 
     if (existingAdmin) {
       return res.status(400).json({
         success: false,
-        message:
-          "Admin already exists",
+        message: "Admin already exists",
       });
     }
 
-    // Hash Password
-    const hashedPassword =
-      await bcrypt.hash(password, 10);
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create Admin
-    const admin =
-      await Admin.create({
-        email,
-        password: hashedPassword,
-      });
+    // Create admin
+    const admin = await Admin.create({
+      email,
+      password: hashedPassword,
+    });
 
     res.status(201).json({
       success: true,
-      message:
-        "Admin Registered Successfully",
+      message: "Admin Registered Successfully",
       admin,
     });
+
   } catch (error) {
-    console.log(error);
+    console.log("REGISTER ERROR:", error);
 
     res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: error.message,
     });
   }
 };
 
-// ================= LOGIN =================
-const loginAdmin = async (
-  req,
-  res
-) => {
+// ================= LOGIN ADMIN =================
+const loginAdmin = async (req, res) => {
   try {
-    const { email, password } =
-      req.body;
+    const { email, password } = req.body;
 
-    // Check Admin
-    const admin =
-      await Admin.findOne({ email });
+    console.log("Login Request:", req.body);
+
+    // Validation
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and Password are required",
+      });
+    }
+
+    // Find admin
+    const admin = await Admin.findOne({ email });
 
     if (!admin) {
       return res.status(404).json({
@@ -72,45 +75,41 @@ const loginAdmin = async (
       });
     }
 
-    // Match Password
-    const isMatch =
-      await bcrypt.compare(
-        password,
-        admin.password
-      );
+    // Compare password
+    const isMatch = await bcrypt.compare(password, admin.password);
 
     if (!isMatch) {
       return res.status(400).json({
         success: false,
-        message:
-          "Invalid Credentials",
+        message: "Invalid Password",
       });
     }
 
-    // Token
+    // Check JWT Secret
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET is missing in .env file");
+    }
+
+    // Generate Token
     const token = jwt.sign(
-      {
-        id: admin._id,
-      },
-      "deshi_secret_key",
-      {
-        expiresIn: "7d",
-      }
+      { id: admin._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
     );
 
     res.status(200).json({
       success: true,
-      message:
-        "Login Successful",
+      message: "Login Successful",
       token,
       admin,
     });
+
   } catch (error) {
-    console.log(error);
+    console.log("LOGIN ERROR FULL:", error);
 
     res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: error.message,
     });
   }
 };

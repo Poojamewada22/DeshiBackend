@@ -1,23 +1,15 @@
 const express = require("express");
-
 const router = express.Router();
 
 const {
   registerAdmin,
   loginAdmin,
-} = require(
-  "../controllers/adminController"
-);
+} = require("../controllers/adminController");
 
-// ================= ROUTES =================
-router.post(
-  "/register",
-  registerAdmin
-);
+// Admin Register Route
+router.post("/register", registerAdmin);
 
-router.post(
-  "/login",
-  loginAdmin
-);
+// Admin Login Route
+router.post("/login", loginAdmin);
 
 module.exports = router;

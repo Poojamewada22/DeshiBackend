@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -8,9 +10,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
-// ================= DATABASE =================
+
+// ================= DATABASE CONNECTION =================
 mongoose
-  .connect("mongodb://127.0.0.1:27017/deshiblog")
+  .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("MongoDB Connected");
   })
@@ -19,27 +22,33 @@ mongoose
   });
 
 // ================= ROUTES =================
-const adminRoutes = require( "./routes/adminRoutes");
-
+const adminRoutes = require("./routes/adminRoutes");
 const categoryRoutes = require("./routes/blogCategoryRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const blogRoutes = require("./routes/blogRoutes");
 
-// ================= API ROUTES =================
-app.use( "/api/admin", adminRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/blog", blogRoutes);
-app.use("/uploads", express.static("uploads"));  
 
-
-// ================= TEST =================
+// ================= TEST ROUTE =================
 app.get("/", (req, res) => {
-  res.send("API Running");
+  res.send("API Running...");
 });
 
-// ================= SERVER =================
-const PORT = 5000;
+// ================= ERROR HANDLER =================
+app.use((err, req, res, next) => {
+  console.error("SERVER ERROR:", err.stack);
+
+  res.status(500).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+  });
+});
+
+// ================= START SERVER =================
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server Running on Port ${PORT}`);
